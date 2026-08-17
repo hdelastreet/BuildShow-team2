@@ -224,7 +224,7 @@
 ### Étape 5.3 — Déploiement Vercel — ⏳ À FAIRE (côté utilisateur)
 - **Objectif** : mettre en ligne.
 - **Actions** : lier le repo GitHub, configurer les env vars sur Vercel (`ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` — cf. `.env.example`), mettre à jour la redirect URL Azure/Supabase avec le domaine prod.
-- **Bloqué par** : accès Vercel + clé Anthropic (non disponible pour l'instant). Le code est prêt (typecheck + lint OK).
+- **Bloqué par** : accès Vercel + clé Anthropic (non disponible pour l'instant). Le code est prêt (typecheck + lint OK). Déploiement Vercel ok
 - **Done when** : la démo tourne sur l'URL Vercel avec login SSO fonctionnel.
 
 ---
