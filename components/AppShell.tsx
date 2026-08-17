@@ -8,7 +8,13 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function AppShell({ children }: { children: React.ReactNode }) {
   let email: string | null = null;
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  // Both values are required: creating the client with one of them missing
+  // throws, and this runs in the root layout — so it would 500 every route.
+  // Same guard as the proxy, which degrades to a no-op when unconfigured.
+  if (
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
     const supabase = await createClient();
     const {
       data: { user },
