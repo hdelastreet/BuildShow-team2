@@ -72,7 +72,6 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <span className="wf-legend">
             WeFiiT — Entraînement soutenance client
           </span>
-          <span className="wf-legend">Prototype V1</span>
         </div>
       </footer>
     </div>

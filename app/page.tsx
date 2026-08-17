@@ -20,7 +20,7 @@ export default function Home() {
           Démarrer une session
         </Link>
         <Link
-          href="/session/new"
+          href="/criteres"
           className="inline-flex items-center justify-center rounded-pill border border-border-white px-7 py-3 text-fg font-medium transition-colors hover:text-electrique"
         >
           En savoir plus

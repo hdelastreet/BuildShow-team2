@@ -4,22 +4,16 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const ALLOWED_DOMAIN = "wefiit.com";
-
 /**
- * Login screen — Microsoft 365 SSO (Azure / Entra ID) as the primary path,
- * with the Supabase magic-link kept as a fallback.
+ * Login screen — Microsoft 365 SSO (Azure / Entra ID) is the only sign-in path.
  *
- * Both flows land on `/auth/callback`, which re-enforces the `@wefiit.com`
+ * The flow lands on `/auth/callback`, which re-enforces the `@wefiit.com`
  * tenant policy server-side. The Azure app registration is single-tenant, so
  * external accounts are already rejected by Microsoft before reaching us.
  */
 function LoginForm() {
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const [ssoLoading, setSsoLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const errorParam = searchParams.get("error");
@@ -47,42 +41,11 @@ function LoginForm() {
     }
   }
 
-  async function sendMagicLink(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    const normalized = email.trim().toLowerCase();
-    if (!normalized.endsWith(`@${ALLOWED_DOMAIN}`)) {
-      setError("Utilisez votre adresse @wefiit.com.");
-      return;
-    }
-
-    setLoading(true);
-    const supabase = createClient();
-    const callbackUrl = new URL("/auth/callback", window.location.origin);
-    callbackUrl.searchParams.set("redirect", redirect);
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: normalized,
-      options: {
-        emailRedirectTo: callbackUrl.toString(),
-        shouldCreateUser: true,
-      },
-    });
-
-    setLoading(false);
-    if (error) {
-      setError(error.message);
-    } else {
-      setSent(true);
-    }
-  }
-
   const banner =
     errorParam === "domain"
       ? "Accès réservé aux adresses @wefiit.com."
       : errorParam
-        ? "Le lien est invalide ou expiré. Redemandez-en un."
+        ? "La connexion a échoué. Réessayez."
         : error;
 
   return (
@@ -117,51 +80,6 @@ function LoginForm() {
         </svg>
         {ssoLoading ? "Redirection…" : "Se connecter avec Microsoft"}
       </button>
-
-      <div className="mt-6 flex items-center gap-4">
-        <span className="h-px flex-1 bg-border-white" />
-        <span className="wf-legend text-fg-muted">ou par e-mail</span>
-        <span className="h-px flex-1 bg-border-white" />
-      </div>
-
-      {sent ? (
-        <div className="mt-8 rounded-2xl border border-jade/40 bg-jade/5 px-5 py-4">
-          <p className="wf-sm font-medium text-fg">Lien envoyé.</p>
-          <p className="wf-sm mt-1 text-fg-muted">
-            Ouvrez l’e-mail envoyé à <strong>{email.trim().toLowerCase()}</strong>{" "}
-            et cliquez sur le lien pour vous connecter. Pensez aux spams.
-          </p>
-          <button
-            type="button"
-            onClick={() => setSent(false)}
-            className="wf-sm mt-3 font-medium text-electrique transition-colors hover:underline"
-          >
-            Utiliser une autre adresse
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={sendMagicLink} className="mt-8 flex flex-col gap-4">
-          <label className="flex flex-col gap-2">
-            <span className="wf-caps text-fg-muted">Adresse e-mail WeFiiT</span>
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              placeholder="prenom.nom@wefiit.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-2xl border border-border-white bg-blanc px-4 py-3 text-fg outline-none transition-colors focus:border-electrique"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={loading}
-            className="inline-flex items-center justify-center rounded-pill border border-marine px-7 py-3 font-medium text-marine transition-colors hover:bg-marine/5 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Envoi…" : "Recevoir le lien de connexion"}
-          </button>
-        </form>
-      )}
 
       <p className="wf-legend mt-6 text-fg-muted">
         Connexion réservée aux comptes @wefiit.com.

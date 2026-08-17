@@ -159,9 +159,8 @@ Pour chaque session d'entraînement, le WeFiiTer fournit **deux documents contex
 
 Accès **réservé aux WeFiiTers** (`@wefiit.com`).
 
-- **SSO Microsoft 365 / Azure AD (implémenté, chemin principal)** : bouton « Se connecter avec Microsoft » → `signInWithOAuth({ provider: 'azure' })`. App registration **single-tenant WeFiiT** : les comptes externes sont refusés par Microsoft en amont. Le domaine `@wefiit.com` est re-vérifié côté serveur au callback (`signOut` si non conforme). Testé OK en local (localhost:3000).
-- **Magic-link e-mail Supabase (implémenté, secours)** : conservé en secondaire sur la page login. Le WeFiiTer saisit son adresse `@wefiit.com` et reçoit un lien de connexion à usage unique. Domaine vérifié côté client (avant envoi) **et** côté serveur (au callback).
-- **Garde de route** : `proxy.ts` (Next.js 16 — ex-`middleware`) redirige tout non-authentifié vers `/login` en conservant la destination. Le callback gère les deux flux (`?code=` PKCE/OAuth **et** `?token_hash=` magic-link) — code agnostique du provider.
+- **SSO Microsoft 365 / Azure AD (implémenté, unique moyen de connexion)** : bouton « Se connecter avec Microsoft » → `signInWithOAuth({ provider: 'azure' })`. App registration **single-tenant WeFiiT** : les comptes externes sont refusés par Microsoft en amont. Le domaine `@wefiit.com` est re-vérifié côté serveur au callback (`signOut` si non conforme). Testé OK en local (localhost:3000).
+- **Garde de route** : `proxy.ts` (Next.js 16 — ex-`middleware`) redirige tout non-authentifié vers `/login` en conservant la destination. Le callback traite le flux PKCE/OAuth (`?code=`).
 - **Secrets** : clé service-role et `ANTHROPIC_API_KEY` restent **côté serveur** uniquement ; le client n'utilise que l'anon key publique.
 
 ---
@@ -216,7 +215,7 @@ CREATE TABLE questions_generated (
 | Layer | Tech | Role |
 |-------|------|------|
 | **Frontend** | React / Next.js | Interface vocal, upload documents, affichage débrief |
-| **Auth** | Supabase Auth — **SSO Microsoft 365 / Azure** (principal) + magic-link e-mail (secours), restreint `@wefiit.com` | Connexion réservée aux WeFiiTers ; SSO Azure single-tenant implémenté |
+| **Auth** | Supabase Auth — **SSO Microsoft 365 / Azure** (unique), restreint `@wefiit.com` | Connexion réservée aux WeFiiTers ; SSO Azure single-tenant implémenté |
 | **Orchestration IA** | Claude API (Messages) | Prompt système, génération questions, débrief |
 | **Voix** | Web Speech API navigateur (STT + TTS) | Dictée + lecture des questions, **côté client** (aucun audio envoyé, seul le texte va à Claude). Live sur Chrome/Edge/Safari ; repli saisie/collage sur Firefox |
 | **Persistence** | Supabase (PostgreSQL) | Sessions, transcripts, feedback historique |
@@ -258,7 +257,7 @@ CREATE TABLE questions_generated (
 | `guide-prepa-soutenance.md` | ❌ À créer | Source froide #1 — contenu corporate WeFiiT |
 | `critères-pitch.md` | ✅ Existant | Source froide #2 — grille d'évaluation |
 | `SPEC.md` | ✅ Créé | Ce document |
-| Auth (SSO Azure + magic-link + garde de route) | ✅ Codé | `lib/supabase/*`, `proxy.ts`, `app/login`, `app/auth/*` — SSO Microsoft/Azure principal, magic-link en secours |
+| Auth (SSO Azure + garde de route) | ✅ Codé | `lib/supabase/*`, `proxy.ts`, `app/login`, `app/auth/*` — SSO Microsoft/Azure, unique moyen de connexion |
 | Frontend (React/Next.js) | ❌ À coder | Setup form + audio recorder + débrief display |
 | Claude API Integration | ❌ À coder | Prompt système + generation questions + débrief |
 | Supabase Schema | ❌ À coder | Tables sessions + questions_generated |
